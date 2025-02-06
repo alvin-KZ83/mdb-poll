@@ -4,14 +4,14 @@ function getRandomNumbers() {
     { min: 26, max: 50 },
     { min: 51, max: 75 },
     { min: 76, max: 100 },
-    { min: 101, max: 125 }
+    { min: 101, max: 125 },
   ];
 
   const result = [];
 
   // Helper function to generate random numbers within a range
   function getRandomInRange(min, max, count) {
-    const numbers = new Set();  // Use a Set to ensure uniqueness
+    const numbers = new Set(); // Use a Set to ensure uniqueness
     while (numbers.size < count) {
       const num = Math.floor(Math.random() * (max - min + 1)) + min;
       numbers.add(num);
@@ -20,7 +20,7 @@ function getRandomNumbers() {
   }
 
   // For each range, generate 5 unique random numbers
-  ranges.forEach(range => {
+  ranges.forEach((range) => {
     const randomNumbers = getRandomInRange(range.min, range.max, 6);
     result.push(...randomNumbers);
   });
@@ -30,67 +30,119 @@ function getRandomNumbers() {
 
 const randomNumbers = getRandomNumbers();
 
-const GIFS = randomNumbers.map(number => `gifs/${number}.gif`);
+const GIFS = randomNumbers.map((number) => `${number}`);
 
 // Fisher-Yates shuffle to randomize the order of the GIFS array
 for (let i = GIFS.length - 1; i > 0; i--) {
   const j = Math.floor(Math.random() * (i + 1));
-  [GIFS[i], GIFS[j]] = [GIFS[j], GIFS[i]];  // Swap the elements
+  [GIFS[i], GIFS[j]] = [GIFS[j], GIFS[i]]; // Swap the elements
 }
 
-async function loadGIFs() {
-  const pollContainer = document.getElementById('poll-container');
+let currentIndex = 0;
 
-  // Display GIFs in the container
-  GIFS.forEach(filename => {
-    const div = document.createElement('div');
-    div.classList.add('poll-item');
+const userSelections = {};
 
-    const img = document.createElement('img');
-    img.src = filename;
-    img.alt = filename;
+function showGIF(index) {
+  const pollContainer = document.getElementById("poll-container");
+  pollContainer.innerHTML = ""; // Clear previous content
 
-    const select = document.createElement('select');
-    select.name = filename;
+  if (index < GIFS.length) {
+    const div = document.createElement("div");
+    div.classList.add("poll-item");
 
-    ["joy", "sad", "anger", "fear", "disgust"].forEach(optionText => {
-      const option = document.createElement('option');
-      option.value = optionText;
-      option.textContent = optionText;
-      select.appendChild(option);
-    });
+    const img = document.createElement("img");
+    img.src = 'gifs/' + GIFS[index] + '.gif';
+    img.alt = GIFS[index];
+
+    const select = document.createElement("select");
+    select.name = GIFS[index];
+
+    ["Joy", "Sad", "Anger", "Fear", "Disgust", "None of the above"].forEach(
+      (optionText) => {
+        const option = document.createElement("option");
+        option.value = optionText;
+        option.textContent = optionText;
+        select.appendChild(option);
+      }
+    );
+
+    // Pre-select the saved value if it exists
+    if (userSelections[GIFS[index]]) {
+      select.value = userSelections[GIFS[index]];
+    }
 
     div.appendChild(img);
     div.appendChild(select);
     pollContainer.appendChild(div);
-  });
+
+    // Show the "Next" button unless it's the last GIF
+    if (index < GIFS.length - 1) {
+      showNextButton(select);
+    } else {
+      showSubmitButton();
+    }
+  }
+}
+
+function showNextButton(selectElement) {
+  let nextButton = document.getElementById("next-button");
+  if (!nextButton) {
+    nextButton = document.createElement("button");
+    nextButton.id = "next-button";
+    nextButton.textContent = "Next";
+    nextButton.addEventListener("click", () => {
+      // Save current selection before moving to the next GIF
+      userSelections[GIFS[currentIndex]] = selectElement.value;
+      currentIndex++;
+      showGIF(currentIndex);
+    });
+    document.body.appendChild(nextButton);
+  }
+  nextButton.style.display = "block";
+}
+
+function showSubmitButton() {
+  const submitButton = document.querySelector('button[onclick="submitPoll()"]');
+  submitButton.style.display = "block";
+
+  const nextButton = document.getElementById("next-button");
+  if (nextButton) {
+    nextButton.style.display = "none";
+  }
 }
 
 async function submitPoll() {
-  const selects = document.querySelectorAll('select');
-  const pollData = Array.from(selects).map(select => ({
-    filename: select.name,
-    description: select.value
+  // Convert userSelections to an array of poll data
+  const pollData = Object.keys(userSelections).map((filename) => ({
+    filename: filename,
+    description: userSelections[filename],
   }));
 
   // Format poll data into a readable message
   const pollMessage = pollData
-    .map(item => `${item.filename} | ${item.description}`)
-    .join('\n');
+    .map((item) => `${item.filename},${item.description}`)
+    .join("\n");
 
   // Send the email using EmailJS
-  emailjs.send("service_8bn207k", "template_osbqps5", {
-    message: pollMessage,
-    from_name: "MDB POLL",
-    to_email: "alvin.kz18@gmail.com"
-  })
-  .then(response => {
-    alert('Poll submitted successfully!');
-    console.log('SUCCESS!', response.status, response.text);
-  })
-  .catch(error => {
-    console.error('FAILED...', error);
-  });
+  emailjs
+    .send("service_8bn207k", "template_osbqps5", {
+      message: pollMessage,
+      from_name: "MDB POLL",
+      to_email: "alvin.kz18@gmail.com",
+    })
+    .then((response) => {
+      alert("Poll submitted successfully!");
+      console.log("SUCCESS!", response.status, response.text);
+    })
+    .catch((error) => {
+      console.error("FAILED...", error);
+    });
 }
 
-loadGIFs();
+function loadFirstGIF() {
+  const submitButton = document.querySelector('button[onclick="submitPoll()"]');
+  submitButton.style.display = "none"; // Hide submit button initially
+  showGIF(currentIndex);
+}
+
+loadFirstGIF();
