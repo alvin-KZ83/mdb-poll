@@ -1,10 +1,10 @@
 function getRandomNumbers() {
   const ranges = [
-    { min: 1, max: 25 },
-    { min: 26, max: 50 },
-    { min: 51, max: 75 },
-    { min: 76, max: 100 },
-    { min: 101, max: 125 },
+    { min: 1, max: 20 },
+    { min: 21, max: 40 },
+    { min: 41, max: 60 },
+    { min: 61, max: 80 },
+    { min: 81, max: 100 },
   ];
 
   const result = [];
@@ -19,7 +19,7 @@ function getRandomNumbers() {
     return Array.from(numbers);
   }
 
-  // For each range, generate 5 unique random numbers
+  // For each range, generate 6 unique random numbers
   ranges.forEach((range) => {
     const randomNumbers = getRandomInRange(range.min, range.max, 6);
     result.push(...randomNumbers);
@@ -39,7 +39,6 @@ for (let i = GIFS.length - 1; i > 0; i--) {
 }
 
 let currentIndex = 0;
-
 const userSelections = {};
 
 function showGIF(index) {
@@ -81,6 +80,8 @@ function showGIF(index) {
     } else {
       showSubmitButton();
     }
+
+    updateProgress(index + 1, GIFS.length); // Update the progress counter
   }
 }
 
@@ -143,6 +144,19 @@ function loadFirstGIF() {
   const submitButton = document.querySelector('button[onclick="submitPoll()"]');
   submitButton.style.display = "none"; // Hide submit button initially
   showGIF(currentIndex);
+}
+
+function updateProgress(current, total) {
+  const progressElement = document.getElementById("progress-counter");
+  if (!progressElement) {
+    const progressContainer = document.createElement("div");
+    progressContainer.id = "progress-container";
+    progressElement = document.createElement("span");
+    progressElement.id = "progress-counter";
+    progressContainer.appendChild(progressElement);
+    document.body.appendChild(progressContainer);
+  }
+  progressElement.textContent = `${current} / ${total}`;
 }
 
 loadFirstGIF();
