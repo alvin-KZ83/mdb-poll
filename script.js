@@ -1,10 +1,10 @@
 function getRandomNumbers() {
   const ranges = [
-    { min: 1, max: 20 },
-    { min: 21, max: 40 },
-    { min: 41, max: 60 },
-    { min: 61, max: 80 },
-    { min: 81, max: 100 },
+    { min:  1, max: 10 },
+    { min: 11, max: 20 },
+    { min: 21, max: 30 },
+    { min: 31, max: 40 },
+    { min: 41, max: 50 },
   ];
 
   const result = [];
@@ -21,7 +21,7 @@ function getRandomNumbers() {
 
   // For each range, generate 6 unique random numbers
   ranges.forEach((range) => {
-    const randomNumbers = getRandomInRange(range.min, range.max, 6);
+    const randomNumbers = getRandomInRange(range.min, range.max, 2);
     result.push(...randomNumbers);
   });
 
